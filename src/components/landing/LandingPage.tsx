@@ -5,6 +5,7 @@ import Layout from './Layout'
 import { sections } from './sections'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import SupportChat from './SupportChat'
 
 export default function LandingPage() {
   const [activeSection, setActiveSection] = useState(0)
@@ -148,6 +149,8 @@ export default function LandingPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SupportChat />
 
       <nav className="fixed top-0 right-0 h-screen flex flex-col justify-center z-30 p-4">
         {sections.map((section, index) => (
