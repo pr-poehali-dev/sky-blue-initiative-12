@@ -11,7 +11,7 @@ export default function ScarePopup() {
     const interval = setInterval(() => {
       setShowWarning(true)
       setDismissed(false)
-    }, 60000)
+    }, 120000)
 
     const timer = setTimeout(() => {
       setShowWarning(true)
