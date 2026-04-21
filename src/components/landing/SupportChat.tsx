@@ -72,7 +72,7 @@ export default function SupportChat() {
       {/* Кнопка открытия чата */}
       <motion.button
         onClick={() => setOpen(o => !o)}
-        className="fixed bottom-6 right-6 z-50 bg-neutral-900 border border-neutral-700 hover:border-red-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-colors"
+        className="fixed bottom-6 left-6 z-50 bg-neutral-900 border border-neutral-700 hover:border-red-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-colors"
         whileTap={{ scale: 0.9 }}
       >
         <AnimatePresence mode="wait">
@@ -95,7 +95,7 @@ export default function SupportChat() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-            className="fixed bottom-24 right-6 z-50 w-80 bg-neutral-950 border border-neutral-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-24 left-6 z-50 w-80 bg-neutral-950 border border-neutral-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Шапка */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-800 bg-neutral-900">
