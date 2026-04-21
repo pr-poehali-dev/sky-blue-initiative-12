@@ -24,6 +24,15 @@ export default function LandingPage() {
   const [scanCount, setScanCount] = useState(0)
   const [scanning, setScanning] = useState(true)
 
+  // Счётчик пользователей
+  const [userCount, setUserCount] = useState(1_284_719)
+  useEffect(() => {
+    const t = setInterval(() => {
+      setUserCount(c => c + Math.floor(Math.random() * 3 + 1))
+    }, 2000)
+    return () => clearInterval(t)
+  }, [])
+
   const hasLetters = /[a-zA-Zа-яА-ЯёЁ]/.test(phone)
   const isValid = phone.trim().length > 0 && !hasLetters
 
@@ -111,6 +120,21 @@ export default function LandingPage() {
         <p className="text-neutral-700 text-[10px] mt-1.5 font-mono">
           {scanProgress >= 100 ? '⚠️ Сканирование завершено!' : `${Math.floor(scanProgress)}%`}
         </p>
+      </div>
+
+      {/* Счётчик защищённых пользователей */}
+      <div className="fixed bottom-6 right-6 z-40 bg-black/80 border border-neutral-800 rounded-xl px-4 py-2.5 backdrop-blur-sm text-right">
+        <p className="text-neutral-500 text-[10px] uppercase tracking-widest">Защищено пользователей</p>
+        <motion.p
+          key={userCount}
+          className="text-white font-black text-lg font-mono"
+          initial={{ y: -8, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          {userCount.toLocaleString('ru-RU')}
+        </motion.p>
+        <p className="text-green-500 text-[10px]">● в реальном времени</p>
       </div>
 
       {/* Кнопка PRO */}

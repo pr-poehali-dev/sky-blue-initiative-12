@@ -3,11 +3,14 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { SectionProps } from "@/types"
+import ReviewsSection from "./ReviewsSection"
 
-export default function Section({ id, title, subtitle, content, isActive, showButton, buttonText }: SectionProps) {
+export default function Section({ id, title, subtitle, content, isActive, showButton, buttonText, isReviews }: SectionProps) {
   const [showInput, setShowInput] = useState(false)
   const [threat, setThreat] = useState("")
   const [deleted, setDeleted] = useState(false)
+
+  if (isReviews) return <ReviewsSection isActive={isActive} />
 
   const handleDelete = () => {
     if (!threat.trim()) return
@@ -92,7 +95,6 @@ export default function Section({ id, title, subtitle, content, isActive, showBu
                 </div>
               </motion.div>
             )}
-
             {deleted && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
