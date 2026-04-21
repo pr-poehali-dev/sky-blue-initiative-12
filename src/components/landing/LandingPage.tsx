@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import Section from './Section'
 import Layout from './Layout'
 import { sections } from './sections'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import SupportChat from './SupportChat'
-import ScarePopup from './ScarePopup'
 
 export default function LandingPage() {
   const [activeSection, setActiveSection] = useState(0)
@@ -14,12 +14,36 @@ export default function LandingPage() {
   const { scrollYProgress } = useScroll({ container: containerRef })
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 })
 
+  // PRO modal
   const [showModal, setShowModal] = useState(false)
   const [phone, setPhone] = useState("")
   const [paid, setPaid] = useState(false)
 
+  // Scanner
+  const [scanProgress, setScanProgress] = useState(0)
+  const [scanCount, setScanCount] = useState(0)
+  const [scanning, setScanning] = useState(true)
+
   const hasLetters = /[a-zA-Zа-яА-ЯёЁ]/.test(phone)
   const isValid = phone.trim().length > 0 && !hasLetters
+
+  // Прогресс-бар сканирования: сканирует, находит вирусы, потом перезапускается
+  useEffect(() => {
+    if (!scanning) return
+    const interval = setInterval(() => {
+      setScanProgress(prev => {
+        if (prev >= 100) {
+          setScanCount(c => c + Math.floor(Math.random() * 300 + 50))
+          setTimeout(() => {
+            setScanProgress(0)
+          }, 1500)
+          return 100
+        }
+        return prev + Math.random() * 3 + 0.5
+      })
+    }, 80)
+    return () => clearInterval(interval)
+  }, [scanning])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,41 +54,66 @@ export default function LandingPage() {
         setActiveSection(newActiveSection)
       }
     }
-
     const container = containerRef.current
-    if (container) {
-      container.addEventListener('scroll', handleScroll)
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener('scroll', handleScroll)
-      }
-    }
+    if (container) container.addEventListener('scroll', handleScroll)
+    return () => { if (container) container.removeEventListener('scroll', handleScroll) }
   }, [])
 
   const handleNavClick = (index: number) => {
     if (containerRef.current) {
-      containerRef.current.scrollTo({
-        top: index * window.innerHeight,
-        behavior: 'smooth'
-      })
+      containerRef.current.scrollTo({ top: index * window.innerHeight, behavior: 'smooth' })
     }
   }
+
+  const fireConfetti = useCallback(() => {
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#ff0000', '#ffffff', '#ff4444', '#ffcc00'] })
+    setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { y: 0.5 }, angle: 60, colors: ['#ff0000', '#fff', '#ff6600'] }), 300)
+    setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { y: 0.5 }, angle: 120, colors: ['#ff0000', '#fff', '#ff6600'] }), 500)
+  }, [])
 
   const handlePay = () => {
     if (!isValid) return
     setPaid(true)
+    fireConfetti()
     setTimeout(() => {
       setPaid(false)
       setPhone("")
       setShowModal(false)
-    }, 3000)
+    }, 4000)
   }
+
+  const displayCount = scanCount + Math.floor(scanProgress * 2)
 
   return (
     <Layout>
-      {/* Кнопка PRO в правом верхнем углу */}
+      {/* Сканер в левом верхнем углу */}
+      <div className="fixed top-4 left-4 z-40 w-56 bg-black/80 border border-neutral-800 rounded-xl p-3 backdrop-blur-sm">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-neutral-400 text-xs font-mono">🔍 Сканирование...</span>
+          <motion.span
+            className="text-red-400 text-xs font-bold font-mono"
+            animate={{ opacity: scanProgress >= 100 ? [1, 0.3, 1] : 1 }}
+            transition={{ duration: 0.4, repeat: scanProgress >= 100 ? Infinity : 0 }}
+          >
+            {displayCount} угроз
+          </motion.span>
+        </div>
+        <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full rounded-full"
+            style={{
+              width: `${Math.min(scanProgress, 100)}%`,
+              background: scanProgress >= 100 ? '#ef4444' : 'linear-gradient(90deg, #ef4444, #f97316)'
+            }}
+            transition={{ ease: 'linear' }}
+          />
+        </div>
+        <p className="text-neutral-700 text-[10px] mt-1.5 font-mono">
+          {scanProgress >= 100 ? '⚠️ Сканирование завершено!' : `${Math.floor(scanProgress)}%`}
+        </p>
+      </div>
+
+      {/* Кнопка PRO */}
       <button
         onClick={() => { setShowModal(true); setPaid(false); setPhone("") }}
         className="fixed top-4 right-12 z-40 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors animate-pulse shadow-lg shadow-red-900"
@@ -102,7 +151,6 @@ export default function LandingPage() {
                     <span className="text-neutral-600 line-through text-sm">99 999₽</span>
                     <span className="text-green-400 text-xs font-bold">−99%</span>
                   </div>
-
                   <label className="text-neutral-400 text-xs mb-2 block">Номер телефона или код активации:</label>
                   <Input
                     value={phone}
@@ -116,16 +164,11 @@ export default function LandingPage() {
                     }`}
                   />
                   {hasLetters && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-red-500 text-xs mb-3"
-                    >
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs mb-3">
                       ⚠️ Только цифры! Буквы — не деньги.
                     </motion.p>
                   )}
                   {!hasLetters && <div className="mb-3" />}
-
                   <Button
                     onClick={handlePay}
                     disabled={!isValid}
@@ -141,9 +184,15 @@ export default function LandingPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-4"
                 >
-                  <div className="text-5xl mb-4">✅</div>
+                  <motion.div
+                    className="text-6xl mb-4"
+                    animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.2, 1] }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    🎉
+                  </motion.div>
                   <h3 className="text-white text-xl font-bold mb-2">Оплата прошла!</h3>
-                  <p className="text-neutral-400 text-sm">Все 9 999 вирусов уничтожены.<br />Ваш компьютер теперь защищён.<br /><span className="text-neutral-600">Наверное.</span></p>
+                  <p className="text-neutral-400 text-sm">Все {displayCount} вирусов уничтожены.<br />Ваш компьютер теперь защищён.<br /><span className="text-neutral-600">Наверное.</span></p>
                 </motion.div>
               )}
             </motion.div>
@@ -152,7 +201,6 @@ export default function LandingPage() {
       </AnimatePresence>
 
       <SupportChat />
-      <ScarePopup />
 
       <nav className="fixed top-0 right-0 h-screen flex flex-col justify-center z-30 p-4">
         {sections.map((section, index) => (
