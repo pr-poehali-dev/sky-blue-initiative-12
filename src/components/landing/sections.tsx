@@ -4,7 +4,7 @@ export const sections = [
   {
     id: 'hero',
     subtitle: <Badge variant="outline" className="text-red-400 border-red-400 animate-pulse">⚠️ ОБНАРУЖЕНО 1337 УГРОЗ</Badge>,
-    title: "Сигма Антивирус™ защитит вас. Наверное.",
+    title: "Сигма Антивирус™ защитит вас.",
     showButton: true,
     buttonText: '🗑️ Удалить угрозы'
   },
